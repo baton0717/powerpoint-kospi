@@ -1,3 +1,5 @@
+export type Market = 'kr' | 'us';
+
 export interface StockData {
   symbol: string;
   name: string;
@@ -6,6 +8,7 @@ export interface StockData {
   changePercent: number;
   volume?: number;
   marketCap?: string;
+  market: Market;
   lastUpdate: string;
 }
 
@@ -15,4 +18,11 @@ export interface NewsItem {
   link: string;
   time: string;
   source: string;
+  market: '국장' | '미장';
+}
+
+export interface SearchResult {
+  symbol: string;
+  name: string;
+  market: Market;
 }

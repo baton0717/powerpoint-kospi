@@ -37,6 +37,7 @@ async function fetchNaverQuote(code: string): Promise<StockData | null> {
       change,
       changePercent,
       volume,
+      market: 'kr' as const,
       lastUpdate: new Date().toISOString(),
     };
   } catch (error) {

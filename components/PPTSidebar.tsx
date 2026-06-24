@@ -1,6 +1,12 @@
 'use client';
 
-export default function PPTSidebar() {
+import { Market } from '@/types/stock';
+
+interface PPTSidebarProps {
+  activeMarket: Market;
+}
+
+export default function PPTSidebar({ activeMarket }: PPTSidebarProps) {
   return (
     <div className="ppt-sidebar w-64 flex flex-col">
       {/* 슬라이드 썸네일 헤더 */}

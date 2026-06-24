@@ -1,13 +1,17 @@
 'use client';
 
+import { Market } from '@/types/stock';
+
 interface PPTRibbonProps {
   onRefresh: () => void;
+  activeMarket: Market;
+  onMarketChange: (market: Market) => void;
 }
 
-export default function PPTRibbon({ onRefresh }: PPTRibbonProps) {
+export default function PPTRibbon({ onRefresh, activeMarket, onMarketChange }: PPTRibbonProps) {
   return (
     <div className="ppt-ribbon h-28 flex flex-col">
-      {/* 상단 탭 바 */}
+      {/* 상단 타이틀 바 */}
       <div className="h-8 flex items-center px-4 bg-ppt-accent text-white text-sm">
         <div className="flex items-center gap-2">
           <span className="font-bold">📊</span>
@@ -30,29 +34,41 @@ export default function PPTRibbon({ onRefresh }: PPTRibbonProps) {
           <button className="ppt-button">전환</button>
           <button className="ppt-button">애니메이션</button>
           <button className="ppt-button">슬라이드 쇼</button>
-          <button className="ppt-button">검토</button>
-          <button className="ppt-button">보기</button>
         </div>
       </div>
 
       {/* 리본 툴바 */}
       <div className="flex-1 px-4 flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <button className="ppt-button text-xs border border-gray-300 rounded">
-            📋 붙여넣기
+        {/* 국장/미장 전환 */}
+        <div className="flex items-center gap-2 bg-white border border-gray-300 rounded px-1 py-0.5">
+          <button
+            onClick={() => onMarketChange('kr')}
+            className={`px-4 py-1 text-sm rounded transition-colors ${
+              activeMarket === 'kr'
+                ? 'bg-ppt-accent text-white font-semibold'
+                : 'hover:bg-gray-100'
+            }`}
+          >
+            🇰🇷 국장
           </button>
-          <button className="ppt-button text-xs">✂️ 잘라내기</button>
-          <button className="ppt-button text-xs">📄 복사</button>
+          <button
+            onClick={() => onMarketChange('us')}
+            className={`px-4 py-1 text-sm rounded transition-colors ${
+              activeMarket === 'us'
+                ? 'bg-ppt-accent text-white font-semibold'
+                : 'hover:bg-gray-100'
+            }`}
+          >
+            🇺🇸 미장
+          </button>
         </div>
 
         <div className="h-10 w-px bg-ppt-border"></div>
 
         <div className="flex items-center gap-2">
-          <button className="ppt-button text-xs">➕ 새 슬라이드</button>
-          <button className="ppt-button text-xs">🔄 레이아웃</button>
           <button 
             onClick={onRefresh}
-            className="ppt-button text-xs bg-green-100 hover:bg-green-200"
+            className="ppt-button text-xs bg-green-100 hover:bg-green-200 border border-green-300"
           >
             🔄 새로고침
           </button>
@@ -60,14 +76,13 @@ export default function PPTRibbon({ onRefresh }: PPTRibbonProps) {
 
         <div className="h-10 w-px bg-ppt-border"></div>
 
-        <div className="flex items-center gap-2 text-xs">
-          <span>글꼴:</span>
-          <select className="ppt-button border border-gray-300">
-            <option>맑은 고딕</option>
-          </select>
-          <select className="ppt-button border border-gray-300">
-            <option>14</option>
-          </select>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <span className="px-2 py-1 bg-gray-100 rounded">
+            자동 갱신: 10초
+          </span>
+          <span className="px-2 py-1 bg-blue-50 rounded text-blue-700">
+            {activeMarket === 'kr' ? '한국 주식' : '미국 주식'}
+          </span>
         </div>
       </div>
     </div>

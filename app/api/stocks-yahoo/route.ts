@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { StockData } from '@/types/stock';
 
-// Yahoo Finance API (unofficial)
+// Yahoo Finance API
 async function fetchYahooQuote(symbol: string): Promise<StockData | null> {
   try {
     const response = await fetch(
@@ -10,7 +10,7 @@ async function fetchYahooQuote(symbol: string): Promise<StockData | null> {
         headers: {
           'User-Agent': 'Mozilla/5.0',
         },
-        next: { revalidate: 30 } // 30초 캐시
+        next: { revalidate: 10 } // 10초 캐시
       }
     );
 
@@ -22,8 +22,6 @@ async function fetchYahooQuote(symbol: string): Promise<StockData | null> {
     if (!result) return null;
 
     const meta = result.meta;
-    const quote = result.indicators?.quote?.[0];
-
     const currentPrice = meta.regularMarketPrice || 0;
     const previousClose = meta.chartPreviousClose || meta.previousClose || 0;
     const change = currentPrice - previousClose;
@@ -31,12 +29,12 @@ async function fetchYahooQuote(symbol: string): Promise<StockData | null> {
 
     return {
       symbol: meta.symbol,
-      name: meta.symbol.replace('.KS', '').replace('.KQ', ''),
+      name: meta.symbol,
       price: currentPrice,
       change,
       changePercent,
       volume: meta.regularMarketVolume,
-      market: 'kr' as const,
+      market: 'us',
       lastUpdate: new Date().toISOString(),
     };
   } catch (error) {
@@ -53,7 +51,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid symbols' }, { status: 400 });
     }
 
-    // 병렬로 모든 종목 조회
     const stocksPromises = symbols.map(symbol => fetchYahooQuote(symbol));
     const stocks = (await Promise.all(stocksPromises)).filter((stock): stock is StockData => stock !== null);
 
