@@ -1,41 +1,56 @@
 import { NextResponse } from 'next/server';
 import { StockData } from '@/types/stock';
 
-// 네이버 금융 시세 조회 API (JSON 엔드포인트)
+// 네이버 금융 시세 조회 (HTML 파싱 - 안정적)
 async function fetchNaverQuote(code: string): Promise<StockData | null> {
   try {
-    // 네이버 금융 시세조회 페이지의 iframe에서 사용하는 실제 API
     const response = await fetch(
-      `https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:${code}`,
+      `https://finance.naver.com/item/main.naver?code=${code}`,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0',
-          'Referer': 'https://finance.naver.com/',
+          'Accept': 'text/html',
         },
-        next: { revalidate: 5 } // 5초 캐시
+        next: { revalidate: 5 }
       }
     );
 
     if (!response.ok) return null;
 
-    const data = await response.json();
-    const result = data?.result?.areas?.[0]?.datas?.[0];
-    
-    if (!result) return null;
+    const html = await response.text();
 
-    const currentPrice = parseInt(result.nv || '0');
-    const previousClose = parseInt(result.pcv || '0');
-    const change = parseInt(result.cv || '0');
-    const changePercent = parseFloat(result.cr || '0');
-    const volume = parseInt(result.aq || '0');
-    const name = result.nm || code;
+    // 종목명 추출 (한글)
+    const nameMatch = html.match(/<div class="wrap_company">\s*<h2>\s*<a[^>]*>([^<]+)<\/a>/);
+    const name = nameMatch ? nameMatch[1].trim() : code;
+
+    // 현재가
+    const priceMatch = html.match(/class="no_today">\s*<em[^>]*>\s*<span[^>]*>[^<]*<\/span>\s*([\d,]+)/);
+    if (!priceMatch) return null;
+    const currentPrice = parseInt(priceMatch[1].replace(/,/g, ''));
+
+    // 등락
+    const changeMatch = html.match(/class="no_exday">\s*<em[^>]*class="no_\w+">\s*<span[^>]*>[^<]*<\/span>\s*([\d,]+)/);
+    const changeValue = changeMatch ? parseInt(changeMatch[1].replace(/,/g, '')) : 0;
+
+    // 등락률
+    const changePercentMatch = html.match(/class="no_exday">\s*<em[^>]*class="no_\w+">\s*<span[^>]*>[^<]*<\/span>\s*[\d,]+\s*<\/em>\s*<span[^>]*class="no_cha">\s*<em[^>]*class="no_\w+">\s*<span[^>]*>[^<]*<\/span>\s*([\d.]+)%/);
+    const changePercent = changePercentMatch ? parseFloat(changePercentMatch[1]) : 0;
+
+    // 거래량
+    const volumeMatch = html.match(/거래량<\/th>\s*<td>\s*<em[^>]*>\s*<span[^>]*>[^<]*<\/span>\s*([\d,]+)/);
+    const volume = volumeMatch ? parseInt(volumeMatch[1].replace(/,/g, '')) : undefined;
+
+    // 상승/하락 판단
+    const isUp = html.includes('ico_up') || html.includes('no_up');
+    const change = isUp ? changeValue : -changeValue;
+    const finalChangePercent = isUp ? changePercent : -changePercent;
 
     return {
       symbol: code,
-      name,
+      name: name,
       price: currentPrice,
       change,
-      changePercent,
+      changePercent: finalChangePercent,
       volume,
       market: 'kr' as const,
       lastUpdate: new Date().toISOString(),
