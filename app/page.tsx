@@ -45,8 +45,12 @@ export default function Home() {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchStocks();
-    // 10초마다 자동 갱신
+  }, [activeMarket, watchlist]);
+
+  // 자동 갱신 (별도)
+  useEffect(() => {
     const interval = setInterval(fetchStocks, 10000);
     return () => clearInterval(interval);
   }, [activeMarket, watchlist]);

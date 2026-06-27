@@ -11,30 +11,24 @@ export default function NewsPanel({ market }: NewsPanelProps) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // TODO: 실제 뉴스 API 연동
-    // 현재는 Mock 데이터
-    const mockNews: NewsItem[] = [
-      {
-        title: market === 'kr' ? '코스피, 외국인 매수에 상승 마감' : 'S&P 500 hits new record high',
-        summary: market === 'kr' ? '외국인과 기관의 동반 매수세에 힘입어 코스피 지수가 상승 마감했습니다.' : 'Major tech stocks drive market higher as investors show renewed confidence.',
-        link: '#',
-        time: '21:30',
-        source: market === 'kr' ? '연합뉴스' : 'Reuters',
-        market: market === 'kr' ? '국장' : '미장',
-      },
-      {
-        title: market === 'kr' ? 'IT 대형주, 일제히 상승세' : 'Tech giants lead market rally',
-        summary: market === 'kr' ? '삼성전자, SK하이닉스 등 IT 대형주가 일제히 상승했습니다.' : 'Apple, Microsoft, and Google shares climb on strong earnings outlook.',
-        link: '#',
-        time: '20:15',
-        source: market === 'kr' ? '매일경제' : 'Bloomberg',
-        market: market === 'kr' ? '국장' : '미장',
-      },
-    ];
+  const fetchNews = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/news?market=${market}`);
+      const data = await response.json();
+      setNews(data.news || []);
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setNews(mockNews);
-    setLoading(false);
+  useEffect(() => {
+    fetchNews();
+    // 5분마다 뉴스 갱신
+    const interval = setInterval(fetchNews, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [market]);
 
   return (
@@ -47,6 +41,12 @@ export default function NewsPanel({ market }: NewsPanelProps) {
         <span className="ml-2 text-xs text-gray-500">
           ({market === 'kr' ? '국장' : '미장'})
         </span>
+        <button
+          onClick={fetchNews}
+          className="ml-auto text-xs text-blue-600 hover:text-blue-800"
+        >
+          🔄
+        </button>
       </div>
 
       {/* 뉴스 목록 */}
@@ -54,6 +54,10 @@ export default function NewsPanel({ market }: NewsPanelProps) {
         {loading ? (
           <div className="p-4 text-center text-gray-400 text-sm">
             뉴스 로딩 중...
+          </div>
+        ) : news.length === 0 ? (
+          <div className="p-4 text-center text-gray-400 text-sm">
+            뉴스를 불러올 수 없습니다
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
@@ -83,7 +87,7 @@ export default function NewsPanel({ market }: NewsPanelProps) {
 
       {/* 하단 */}
       <div className="h-10 border-t border-gray-200 flex items-center px-4 text-xs text-gray-400">
-        자동 갱신
+        5분마다 자동 갱신
       </div>
     </div>
   );
