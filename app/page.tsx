@@ -10,11 +10,28 @@ export default function Home() {
   const [activeMarket, setActiveMarket] = useState<Market>('kr');
   const [stocks, setStocks] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [watchlist, setWatchlist] = useState<Array<{ symbol: string; market: Market }>>([
-    { symbol: '005930', market: 'kr' },
-    { symbol: '000660', market: 'kr' },
-    { symbol: '035420', market: 'kr' },
-  ]);
+  // 기본 종목: 시가총액 Top 10
+  const [watchlist, setWatchlist] = useState<Array<{ symbol: string; market: Market }>>([{
+    symbol: '005930', market: 'kr' // 삼성전자
+  }, {
+    symbol: '000660', market: 'kr' // SK하이닉스
+  }, {
+    symbol: '373220', market: 'kr' // LG에너지솔루션
+  }, {
+    symbol: '207940', market: 'kr' // 삼성바이오로직스
+  }, {
+    symbol: '005380', market: 'kr' // 현대차
+  }, {
+    symbol: '005490', market: 'kr' // POSCO홀딩스
+  }, {
+    symbol: '035420', market: 'kr' // NAVER
+  }, {
+    symbol: '051910', market: 'kr' // LG화학
+  }, {
+    symbol: '006400', market: 'kr' // 삼성SDI
+  }, {
+    symbol: '000270', market: 'kr' // 기아
+  }]);
 
   // 주가 데이터 불러오기
   const fetchStocks = async () => {
