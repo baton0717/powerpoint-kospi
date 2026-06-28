@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PPTRibbon from '@/components/PPTRibbon';
 import PPTSidebar from '@/components/PPTSidebar';
 import PPTCanvas from '@/components/PPTCanvas';
@@ -34,7 +34,7 @@ export default function Home() {
   }]);
 
   // 주가 데이터 불러오기
-  const fetchStocks = async () => {
+  const fetchStocks = useCallback(async () => {
     try {
       const currentWatchlist = watchlist.filter(item => item.market === activeMarket);
       
@@ -59,18 +59,18 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [watchlist, activeMarket]);
 
   useEffect(() => {
     setLoading(true);
     fetchStocks();
-  }, [activeMarket, watchlist]);
+  }, [fetchStocks]);
 
   // 자동 갱신 (별도)
   useEffect(() => {
     const interval = setInterval(fetchStocks, 10000);
     return () => clearInterval(interval);
-  }, [activeMarket, watchlist]);
+  }, [fetchStocks]);
 
   const handleAddStock = (symbol: string, market: Market) => {
     console.log('[HomePage] Adding stock:', symbol, market);
