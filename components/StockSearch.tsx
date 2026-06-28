@@ -54,6 +54,7 @@ export default function StockSearch({ market, onSelectStock }: StockSearchProps)
   }, []);
 
   const handleSelect = (symbol: string) => {
+    console.log('[StockSearch] Selected:', symbol, 'market:', market);
     onSelectStock(symbol);
     setQuery('');
     setIsOpen(false);

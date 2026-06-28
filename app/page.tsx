@@ -73,8 +73,13 @@ export default function Home() {
   }, [activeMarket, watchlist]);
 
   const handleAddStock = (symbol: string, market: Market) => {
+    console.log('[HomePage] Adding stock:', symbol, market);
     if (!watchlist.find(item => item.symbol === symbol && item.market === market)) {
-      setWatchlist([...watchlist, { symbol, market }]);
+      const newWatchlist = [...watchlist, { symbol, market }];
+      console.log('[HomePage] New watchlist:', newWatchlist);
+      setWatchlist(newWatchlist);
+    } else {
+      console.log('[HomePage] Stock already in watchlist');
     }
   };
 
